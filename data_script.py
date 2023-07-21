@@ -56,10 +56,6 @@ neon_header = [
     "mips",
 ]
 
-# vector_lengths = [128, 256, 512, 1024, 2048]
-
-# matrix_sizes = [64, 256]
-
 fpws = ["32", "64"]
 
 
@@ -67,10 +63,15 @@ class ModsimBenchmarks:
     def __init__(self):
         json_cfg_file = open(self.get_config_file_path(sys.argv[1:]), "r")
         json_cfg = json.load(json_cfg_file)
-        self.validate_json_config(json_cfg)
-        self.json_cfg = json_cfg
         self.sim_dir_path = "%s/sim" % os.path.abspath(os.getcwd())
         self.stats_dir_path = "%s/stats" % os.path.abspath(os.getcwd())
+        if not os.path.exists(self.sim_dir_path):
+            os.mkdir(self.sim_dir_path)
+
+        if not os.path.exists(self.stats_dir_path):
+            os.mkdir(self.stats_dir_path)
+        self.validate_json_config(json_cfg)
+        self.json_cfg = json_cfg
         self.sim_sst_stat_csv_path = "%s/stat.csv" % self.sim_dir_path
         self.generate_benchmarks()
 
@@ -98,6 +99,8 @@ class ModsimBenchmarks:
             "benchmarks",
             "yaml_configs_dir_path",
             "bin_dir_path",
+            "input_ref_path",
+            "output_ref_path",
             "sst_config_path",
             "sst_core_path",
             "matrix_sizes",
@@ -123,7 +126,7 @@ class ModsimBenchmarks:
         self.sst_core_path = json_dict["sst_core_path"]
         self.validate_dir_existance(self.sst_core_path)
 
-        self.input_files_dir_path = "%s/Input_files" % json_dict["bin_dir_path"]
+        self.input_files_dir_path = json_dict["input_ref_path"]
         self.validate_dir_existance(self.input_files_dir_path)
         for fpw in fpws:
             for size in json_dict["matrix_sizes"]:
@@ -136,7 +139,7 @@ class ModsimBenchmarks:
                 )
                 self.validate_file_existance(input_file_path)
 
-        self.output_files_dir_path = "%s/Ref_output" % json_dict["bin_dir_path"]
+        self.output_files_dir_path = json_dict["output_ref_path"]
         self.validate_dir_existance(self.output_files_dir_path)
         for fpw in fpws:
             for size in json_dict["matrix_sizes"]:

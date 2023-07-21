@@ -26,6 +26,8 @@
 - The script can be run using the command: `<python|python3> data_script.py --config=<path>`
   - `<path>` is the path to a JSON file with the following properties:
     - `bin_dir_path`: `<string> -- (Path to Binaries directory)`
+    - `input_ref_path`: `<string> -- (Path to Input_files directory)`
+    - `output_ref_path`: `<string> -- (Path to Ref_output files directory)`
     - `yaml_configs_dir_path`: `<string> -- (Path to the SimEng Yaml config files directory)`
     - `benchmarks`: `<Array(string)> -- (name of benchmark files to run)`
     - `sst_config_path`: `<string> -- (Path to sst config.py used for all benchmark runs)`
@@ -41,6 +43,8 @@
 ```
 {
   "bin_dir_path": "/home/Binaries",
+  "input_ref_path": "/home/Input_files",
+  "output_ref_path": "/home/Ref_output",
   "yaml_configs_dir_path": "/home/yaml_configs",
   "benchmarks": ["gemm_fp32_neon", "gemm_fp64_sve128"],
   "sst_config_path": "modsim-a64fx-config.py",

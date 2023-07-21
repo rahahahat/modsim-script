@@ -1,5 +1,7 @@
 {
   "bin_dir_path": "/home/rahat/work/modsim/Binaries",
+  "input_ref_path": "",
+  "output_ref_path": "",
   "yaml_configs_dir_path": "/home/rahat/work/modsim/yaml_configs",
   "benchmarks": ["gemm_fp32_neon", "gemm_fp64_sve128", "gemm_fp32_sme"],
   "sst_config_path": "/home/rahat/work/modsim/sim/modsim-a64fx-config.py",
