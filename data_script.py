@@ -387,7 +387,7 @@ class ModsimBenchmarks:
         elif category == "sme":
             csv_row["sme_length"] = benchmark["sme_svl"]
             csv_row["l1_core_bw"] = benchmark["l1_core_bw"]
-        return csv_row | (simeng_stats | sst_stats)
+        return {**csv_row , **{**simeng_stats , **sst_stats}}
 
     def generate_stat_file_from_df(self, df, stat_fpath):
         df.to_csv(stat_fpath, index=False)
