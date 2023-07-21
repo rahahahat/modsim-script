@@ -387,7 +387,7 @@ class ModsimBenchmarks:
         elif category == "sme":
             csv_row["sme_length"] = benchmark["sme_svl"]
             csv_row["l1_core_bw"] = benchmark["l1_core_bw"]
-        return {**csv_row , **{**simeng_stats , **sst_stats}}
+        return {**csv_row, **{**simeng_stats, **sst_stats}}
 
     def generate_stat_file_from_df(self, df, stat_fpath):
         df.to_csv(stat_fpath, index=False)
@@ -437,6 +437,8 @@ class ModsimBenchmarks:
 
     def parse_sim_sst_stats(self):
         csv_pd = pd.read_csv(self.sim_sst_stat_csv_path)
+        if self.json_cfg["print_sim_output"]:
+            print(csv_pd)
         l1h, l1m, l2h, l2m = csv_pd[" Sum.u64"]
         parsed_csv = {
             "l1_hits": int(l1h),
@@ -475,7 +477,6 @@ class ModsimBenchmarks:
         stdout = self.run_subprocess(cmd)
         if self.json_cfg["print_sim_output"]:
             print(stdout)
-        self.stop_and_persist_benchmark_spinner()
         return stdout
 
     def run_neon(self, b_suite):
@@ -503,6 +504,7 @@ class ModsimBenchmarks:
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+                    self.stop_and_persist_benchmark_spinner()
                     current_count += 1
             except KeyboardInterrupt:
                 self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
@@ -532,6 +534,7 @@ class ModsimBenchmarks:
                     self.generate_sve_yaml_with_scalebw(
                         sve_yaml_path, sim_yaml_file_path, sve_vl
                     )
+
                     stdout = self.run_benchmark(
                         benchmark["sst_cli_args"],
                         total_benchmark_count,
@@ -542,6 +545,7 @@ class ModsimBenchmarks:
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+                    self.stop_and_persist_benchmark_spinner()
                     current_count += 1
             except KeyboardInterrupt:
                 self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
@@ -581,6 +585,7 @@ class ModsimBenchmarks:
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+                    self.stop_and_persist_benchmark_spinner()
                     current_count += 1
             except KeyboardInterrupt:
                 self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
