@@ -179,7 +179,7 @@ class ModsimBenchmarks:
             matrix_size,
             matrix_size,
         )
-        iterations = 10 if (matrix_size > 256) else 1
+        iterations = 10 if (matrix_size > 256) else 100
         exec_args = "%s %s %s" % (input_file_path, output_file_path, iterations)
         return [exec_args, iterations]
 
