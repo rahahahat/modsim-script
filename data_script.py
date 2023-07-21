@@ -222,7 +222,7 @@ class ModsimBenchmarks:
         file_benchmark["benchmarks"] = benchmarks
         return file_benchmark
 
-    def generate_sve_benchmarks(self, name, fp_width):
+    def generate_sve_benchmarks(self, name, fp_width, sve_vl):
         matrix_sizes = self.json_cfg["matrix_sizes"]
         vector_lengths = self.json_cfg["vector_lengths"]
         benchmarks = []
@@ -233,27 +233,27 @@ class ModsimBenchmarks:
         for msize in matrix_sizes:
             exec_args, itrs = self.generate_benchmark_exec_args(fp_width, msize)
             path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
-            for vector_length in vector_lengths:
-                l1_core_bw = self.scale_core_and_l1_bandwidth(vector_length)
-                benchmark = {
-                    "path": path,
-                    "desc": (
-                        "%s input_size=%s sve_vl=%s itrs=%s l1/core_bw=%sB"
-                        % (name, msize, vector_length, itrs, l1_core_bw)
-                    ),
-                    "sve_length": vector_length,
-                    "l1_core_bw": l1_core_bw,
-                    "itrs": itrs,
-                    "sst_cli_args": self.generate_sst_cli_args(
-                        file_benchmark["sim_yaml_path"],
-                        path,
-                        exec_args,
-                        l1_core_bw,
-                        self.sim_sst_stat_csv_path,
-                    ),
-                    "matrix_size": msize,
-                }
-                benchmarks.append(benchmark)
+
+            l1_core_bw = self.scale_core_and_l1_bandwidth(sve_vl)
+            benchmark = {
+                "path": path,
+                "desc": (
+                    "%s input_size=%s sve_vl=%s itrs=%s l1/core_bw=%sB"
+                    % (name, msize, sve_vl, itrs, l1_core_bw)
+                ),
+                "sve_length": sve_vl,
+                "l1_core_bw": l1_core_bw,
+                "itrs": itrs,
+                "sst_cli_args": self.generate_sst_cli_args(
+                    file_benchmark["sim_yaml_path"],
+                    path,
+                    exec_args,
+                    l1_core_bw,
+                    self.sim_sst_stat_csv_path,
+                ),
+                "matrix_size": msize,
+            }
+            benchmarks.append(benchmark)
         file_benchmark["benchmarks"] = benchmarks
         return file_benchmark
 
@@ -310,7 +310,10 @@ class ModsimBenchmarks:
                 otp_dict["sme"]["count"] += len(file_benchmark["benchmarks"])
                 otp_dict["sme"]["file_benchmarks"].append(file_benchmark)
             else:
-                file_benchmark = self.generate_sve_benchmarks(benchmark_name, fp_wdith)
+                sve_vl = self.get_sve_width_from_benchmark(name_split[-1])
+                file_benchmark = self.generate_sve_benchmarks(
+                    benchmark_name, fp_wdith, sve_vl
+                )
                 otp_dict["sve"]["count"] += len(file_benchmark["benchmarks"])
                 otp_dict["sve"]["file_benchmarks"].append(file_benchmark)
 
@@ -319,6 +322,9 @@ class ModsimBenchmarks:
     # Get fp width
     def get_fp_width(self, fp_str):
         return int(fp_str[2:])
+
+    def get_sve_width_from_benchmark(self, vl_str):
+        return int(vl_str[3:])
 
     # Scale core and L1 bandwidth value per vector length
     def scale_core_and_l1_bandwidth(self, vector_length):
