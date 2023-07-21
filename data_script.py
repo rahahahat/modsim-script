@@ -417,7 +417,9 @@ class ModsimBenchmarks:
         total_cycles_reg = re.compile("\[SimEng\] cycles: ([0-9]+)")
         ipc_reg = re.compile("\[SimEng\] ipc: (\d+(?:\.\d+)?)")
         insn_reg = re.compile("\[SimEng\] retired: ([0-9]+)")
-        mips_reg = re.compile("(\d+(?:\.\d+)?)\sMIPS")
+        mips_reg = re.compile(
+            "\[SimEng\] Finished [0-9]+ ticks in [0-9]+ms \(59 kHz, (\d+(?:\.\d+)?) MIPS\)"
+        )
 
         lines = output.splitlines()
         parsed_output = {"roi_cycles": -1, "total_cycles": -1, "ipc": 0}
