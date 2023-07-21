@@ -53,15 +53,12 @@
   "vector_lengths": [128, 256],
   "print_sim_output": false
 }
-## The above configuration options will do 9 simulation runs i.e.
+## The above configuration options will do 6 simulation runs i.e.
 gemm_fp32_neon inp=64 vl=512 itrs=100
 gemm_fp32_neon inp=256 vl=512 itrs=100
 gemm_fp32_neon inp=1024 vl=512 itrs=10
 
 gemm_fp32_sve128 inp=64 vl=128 itrs=100
-gemm_fp32_sve128 inp=64 vl=256 itrs=100
 gemm_fp32_sve128 inp=256 vl=128 itrs=100
-gemm_fp32_sve128 inp=256 vl=256 itrs=100
 gemm_fp32_sve128 inp=1024 vl=128 itrs=10
-gemm_fp32_sve128 inp=1024 vl=256 itrs=10
 ```
