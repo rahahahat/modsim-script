@@ -498,8 +498,8 @@ class ModsimBenchmarks:
             row_df = pd.DataFrame(columns=neon_header)
             current_count = completed_count
             stat_file_path = file_benchmark["stat_file_path"]
-            try:
-                for benchmark in benchmarks:
+            for benchmark in benchmarks:
+                try:
                     current_count += 1
                     stdout = self.run_benchmark(
                         benchmark["sst_cli_args"],
@@ -512,11 +512,11 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
-            except KeyboardInterrupt:
-                self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
-            else:
-                completed_count = current_count
-                self.generate_stat_file_from_df(row_df, stat_file_path)
+                except KeyboardInterrupt:
+                    self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
+                else:
+                    completed_count = current_count
+            self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run_sve(self, b_suite):
         file_benchmarks = b_suite["file_benchmarks"]
@@ -533,9 +533,8 @@ class ModsimBenchmarks:
             stat_file_path = file_benchmark["stat_file_path"]
             sim_yaml_file_path = file_benchmark["sim_yaml_path"]
             sve_yaml_path = self.yaml_config_paths["sve"]
-
-            try:
-                for benchmark in benchmarks:
+            for benchmark in benchmarks:
+                try:
                     current_count += 1
                     sve_vl = benchmark["sve_length"]
                     self.generate_sve_yaml_with_scalebw(
@@ -553,11 +552,11 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
-            except KeyboardInterrupt:
-                self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
-            else:
-                completed_count = current_count
-                self.generate_stat_file_from_df(row_df, stat_file_path)
+                except KeyboardInterrupt:
+                    self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
+                else:
+                    completed_count = current_count
+            self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run_sme(self, b_suite):
         file_benchmarks = b_suite["file_benchmarks"]
@@ -575,8 +574,8 @@ class ModsimBenchmarks:
             sim_yaml_file_path = file_benchmark["sim_yaml_path"]
             sme_yaml_path = self.yaml_config_paths["sme"]
 
-            try:
-                for benchmark in benchmarks:
+            for benchmark in benchmarks:
+                try:
                     current_count += 1
                     sme_svl = benchmark["sme_svl"]
                     self.generate_sme_yaml_with_scalebw(
@@ -593,11 +592,11 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
-            except KeyboardInterrupt:
-                self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
-            else:
-                completed_count = current_count
-                self.generate_stat_file_from_df(row_df, stat_file_path)
+                except KeyboardInterrupt:
+                    self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
+                else:
+                    completed_count = current_count
+            self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run(self):
         self.run_neon(self.benchmarks["neon"])
