@@ -7,7 +7,7 @@
 
 - Create a python virtual environment by running the command: `<python|python3> -m venv .env`
   - This will create a python virtual environment of with the name `.env`
-- Activate the virtual environment using the command: `source .env/bin/active`
+- Activate the virtual environment using the command: `source .env/bin/activate`
 - Install all dependencies using the command: `<pip|pip3> -r install requirements.txt`
 
 ## Folder Structure
@@ -18,7 +18,7 @@
   - `yaml_configs`: This is the directory in which the biolerplate `.yaml` config files live which are used to generate `.yaml` files for simulation depending on type of benchmark: `neon|sve|sme` and vector length: `128|256|512|1024|2048`
   - `data_script.py`: This is the script itself.
   - `config.json`: This is JSON config file used by the script.
-  - `modsim-a64fx-config.py`: This is SST `config.py` file used to run all simulations. During runtime the script pass cli arguments to this config file which are used to privode simulation parameters to `sstsimeng.simengcore`
+  - `modsim-a64fx-config.py`: This is SST `config.py` file used to run all simulations. During runtime the script passes cli arguments to this config file which are used to provide simulation parameters to `sstsimeng.simengcore`
   - `requirements.txt`: script dependencies used by `pip`.
 
 ## Running the script
@@ -54,9 +54,9 @@
   "print_sim_output": false
 }
 ## The above configuration options will do 6 simulation runs i.e.
-gemm_fp32_neon inp=64 vl=512 itrs=100
-gemm_fp32_neon inp=256 vl=512 itrs=100
-gemm_fp32_neon inp=1024 vl=512 itrs=10
+gemm_fp32_neon inp=64 itrs=100
+gemm_fp32_neon inp=256 itrs=100
+gemm_fp32_neon inp=1024 itrs=10
 
 gemm_fp32_sve128 inp=64 vl=128 itrs=100
 gemm_fp32_sve128 inp=256 vl=128 itrs=100
