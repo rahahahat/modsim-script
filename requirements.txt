@@ -1,0 +1,13 @@
+colorama==0.4.6
+halo==0.0.31
+log-symbols==0.0.14
+numpy==1.25.1
+pandas==2.0.3
+python-dateutil==2.8.2
+pytz==2023.3
+ruamel.yaml==0.17.32
+ruamel.yaml.clib==0.2.7
+six==1.16.0
+spinners==0.0.24
+termcolor==2.3.0
+tzdata==2023.3

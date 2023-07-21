@@ -1,0 +1,10 @@
+{
+  "bin_dir_path": "/home/rahat/work/modsim/Binaries",
+  "yaml_configs_dir_path": "/home/rahat/work/modsim/yaml_configs",
+  "benchmarks": ["gemm_fp32_neon", "gemm_fp64_sve128", "gemm_fp32_sme"],
+  "sst_config_path": "/home/rahat/work/modsim/sim/modsim-a64fx-config.py",
+  "sst_core_path": "/home/rahat/work/installs/sst-core/bin",
+  "matrix_sizes": [64],
+  "vector_lengths": [1024, 2048],
+  "print_sim_output": false
+}
