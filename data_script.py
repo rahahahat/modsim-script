@@ -179,7 +179,7 @@ class ModsimBenchmarks:
             matrix_size,
             matrix_size,
         )
-        iterations = 10 if (matrix_size > 256) else 100
+        iterations = 10 if (matrix_size > 256) else 1
         exec_args = "%s %s %s" % (input_file_path, output_file_path, iterations)
         return [exec_args, iterations]
 
@@ -415,11 +415,9 @@ class ModsimBenchmarks:
     def parse_output(self, output: str):
         roi_cycles_reg = re.compile("Done in ([0-9]+) cycles!")
         total_cycles_reg = re.compile("\[SimEng\] cycles: ([0-9]+)")
-        ipc_reg = re.compile("\[SimEng\] ipc: ([0-9]+\.[0-9]+)")
+        ipc_reg = re.compile("\[SimEng\] ipc: (\d+(?:\.\d+)?)")
         insn_reg = re.compile("\[SimEng\] retired: ([0-9]+)")
-        mips_reg = re.compile(
-            "\[SimEng\] Finished [0-9]+ ticks in [0-9]+ms \([0-9]+ kHz, ([0-9]+\.[0-9]+) MIPS\)"
-        )
+        mips_reg = re.compile("(\d+(?:\.\d+)?)\sMIPS")
 
         lines = output.splitlines()
         parsed_output = {"roi_cycles": -1, "total_cycles": -1, "ipc": 0}
