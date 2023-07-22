@@ -397,7 +397,7 @@ class ModsimBenchmarks:
 
     def generate_stat_file_from_df(self, df, stat_fpath):
         df.to_csv(stat_fpath, index=False)
-        print(df)
+        print(df.iloc[[-1]])
         print("Statistics written to: %s" % colored(stat_fpath, "light_blue"))
         return
 
@@ -512,11 +512,12 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
+                    self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
                     self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
                 else:
                     completed_count = current_count
-            self.generate_stat_file_from_df(row_df, stat_file_path)
+            # self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run_sve(self, b_suite):
         file_benchmarks = b_suite["file_benchmarks"]
@@ -552,11 +553,12 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
+                    self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
                     self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
                 else:
                     completed_count = current_count
-            self.generate_stat_file_from_df(row_df, stat_file_path)
+            # self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run_sme(self, b_suite):
         file_benchmarks = b_suite["file_benchmarks"]
@@ -592,11 +594,12 @@ class ModsimBenchmarks:
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
                     self.stop_and_persist_benchmark_spinner()
+                    self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
                     self.exit_benchmark_on_keyboard_interrupt(row_df, stat_file_path)
                 else:
                     completed_count = current_count
-            self.generate_stat_file_from_df(row_df, stat_file_path)
+        # self.generate_stat_file_from_df(row_df, stat_file_path)
 
     def run(self):
         self.run_neon(self.benchmarks["neon"])
