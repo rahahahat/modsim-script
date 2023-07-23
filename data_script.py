@@ -413,32 +413,25 @@ class ModsimBenchmarks:
         exit(1)
 
     def parse_output(self, output: str):
-        roi_cycles_reg = re.compile("Done in ([0-9]+) cycles!")
-        total_cycles_reg = re.compile("\[SimEng\] cycles: ([0-9]+)")
-        ipc_reg = re.compile("\[SimEng\] ipc: (\d+(?:\.\d+)?)")
-        insn_reg = re.compile("\[SimEng\] retired: ([0-9]+)")
-        mips_reg = re.compile(
-            "\[SimEng\] Finished [0-9]+ ticks in [0-9]+ms \([0-9]+ kHz, (\d+(?:\.\d+)?) MIPS\)"
-        )
+        roi_cycles_reg = re.compile("Done in (-?[0-9]+) cycles!")
+        total_cycles_reg = re.compile("\[SimEng\] cycles: (-?[0-9]+)")
+        ipc_reg = re.compile("\[SimEng\] ipc: (-?\d+(?:\.\d+)?)")
+        insn_reg = re.compile("\[SimEng\] retired: (-?[0-9]+)")
+        mips_reg = re.compile("\s(-?\d+(?:\.\d+)?) MIPS\)")
 
         lines = output.splitlines()
         parsed_output = {"roi_cycles": -1, "total_cycles": -1, "ipc": 0}
         for line in lines:
-            if re.match(roi_cycles_reg, line):
-                search = re.search(roi_cycles_reg, line)
-                parsed_output["roi_cycles"] = int(search.group(1))
-            elif re.match(insn_reg, line):
-                search = re.search(insn_reg, line)
-                parsed_output["total_insns"] = int(search.group(1))
-            elif re.match(ipc_reg, line):
-                search = re.search(ipc_reg, line)
-                parsed_output["ipc"] = float(search.group(1))
-            elif re.match(total_cycles_reg, line):
-                search = re.search(total_cycles_reg, line)
-                parsed_output["total_cycles"] = int(search.group(1))
-            elif re.match(mips_reg, line):
-                search = re.search(mips_reg, line)
-                parsed_output["mips"] = float(search.group(1))
+            if roi_search := re.search(roi_cycles_reg, line):
+                parsed_output["roi_cycles"] = int(roi_search.group(1))
+            elif insn_search := re.search(insn_reg, line):
+                parsed_output["total_insns"] = int(insn_search.group(1))
+            elif ipc_search := re.search(ipc_reg, line):
+                parsed_output["ipc"] = float(ipc_search.group(1))
+            elif tc_search := re.search(total_cycles_reg, line):
+                parsed_output["total_cycles"] = int(tc_search.group(1))
+            elif mips_search := re.search(mips_reg, line):
+                parsed_output["mips"] = float(mips_search.group(1))
         return parsed_output
 
     def parse_sim_sst_stats(self):
