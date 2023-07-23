@@ -187,15 +187,7 @@ replacement_policy_l2 = l2cache.setSubComponent(
 )
 
 prefetcher_l2 = l2cache.setSubComponent("prefetcher", "cassini.StridePrefetcher")
-prefetcher_l2.addParams(
-    {
-        "cache_line_size": A64FX_CLW,
-        "reach": 5,
-        "detect_range": 3,
-        "history": 1,
-        "address_count": 8,
-    }
-)
+prefetcher_l2.addParams({"cache_line_size": A64FX_CLW})
 
 # --------------------------------------------- L2 Cache ---------------------------------------------
 
