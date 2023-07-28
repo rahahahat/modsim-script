@@ -10,20 +10,38 @@ from termcolor import colored
 
 from ruamel.yaml import YAML
 
+simeng_stats__ = []
+
 sve_header = [
     "sve_length",
     "l1_core_bw",
     "matrix_size",
     "itrs",
     "ipc",
-    "total_cycles",
     "roi_cycles",
-    "total_insns",
+    "cycles",
+    "retired",
     "l1_hits",
     "l1_misses",
     "l2_hits",
     "l2_misses",
-    "mips",
+    "branch.executed",
+    "branch.mispredict",
+    "branch.missrate",
+    "decode.earlyFlushes",
+    "dispatch.rsStalls",
+    "fetch.branchStalls",
+    "flushes",
+    "issue.backendStalls",
+    "issue.frontendStalls",
+    "issue.portBusyStalls",
+    "lsq.loadViolations",
+    "rename.allocationStalls",
+    "rename.lqStalls",
+    "rename.robStalls",
+    "rename.sqStalls",
+    "rob.smesCommitted",
+    "rob.svesCommitted",
 ]
 
 sme_header = [
@@ -32,28 +50,60 @@ sme_header = [
     "matrix_size",
     "itrs",
     "ipc",
-    "total_cycles",
     "roi_cycles",
-    "total_insns",
+    "cycles",
+    "retired",
     "l1_hits",
     "l1_misses",
     "l2_hits",
     "l2_misses",
-    "mips",
+    "branch.executed",
+    "branch.mispredict",
+    "branch.missrate",
+    "decode.earlyFlushes",
+    "dispatch.rsStalls",
+    "fetch.branchStalls",
+    "flushes",
+    "issue.backendStalls",
+    "issue.frontendStalls",
+    "issue.portBusyStalls",
+    "lsq.loadViolations",
+    "rename.allocationStalls",
+    "rename.lqStalls",
+    "rename.robStalls",
+    "rename.sqStalls",
+    "rob.smesCommitted",
+    "rob.svesCommitted",
 ]
 
 neon_header = [
     "matrix_size",
     "itrs",
     "ipc",
-    "total_cycles",
     "roi_cycles",
-    "total_insns",
+    "cycles",
+    "retired",
     "l1_hits",
     "l1_misses",
     "l2_hits",
     "l2_misses",
-    "mips",
+    "branch.executed",
+    "branch.mispredict",
+    "branch.missrate",
+    "decode.earlyFlushes",
+    "dispatch.rsStalls",
+    "fetch.branchStalls",
+    "flushes",
+    "issue.backendStalls",
+    "issue.frontendStalls",
+    "issue.portBusyStalls",
+    "lsq.loadViolations",
+    "rename.allocationStalls",
+    "rename.lqStalls",
+    "rename.robStalls",
+    "rename.sqStalls",
+    "rob.smesCommitted",
+    "rob.svesCommitted",
 ]
 
 fpws = ["32", "64"]
@@ -65,11 +115,16 @@ class ModsimBenchmarks:
         json_cfg = json.load(json_cfg_file)
         self.sim_dir_path = "%s/sim" % os.path.abspath(os.getcwd())
         self.stats_dir_path = "%s/stats" % os.path.abspath(os.getcwd())
+        self.output_dir_path = "%s/output" % os.path.abspath(os.getcwd())
         if not os.path.exists(self.sim_dir_path):
             os.mkdir(self.sim_dir_path)
 
         if not os.path.exists(self.stats_dir_path):
             os.mkdir(self.stats_dir_path)
+
+        if not os.path.exists(self.output_dir_path):
+            os.mkdir(self.output_dir_path)
+
         self.validate_json_config(json_cfg)
         self.json_cfg = json_cfg
         self.sim_sst_stat_csv_path = "%s/stat.csv" % self.sim_dir_path
@@ -184,11 +239,24 @@ class ModsimBenchmarks:
         return [exec_args, iterations]
 
     def generate_sst_cli_args(
-        self, se_yaml_path, exec_path, exec_args, bandwidth, sim_stat_file_path
+        self,
+        se_yaml_path,
+        exec_path,
+        exec_args,
+        bandwidth,
+        sim_stat_file_path,
+        simeng_stat_fpath,
     ):
         sst_args = (
-            "--|yaml_path=%s|exec_path=%s|exec_args=%s|l1_core_bw=%sB|stat_fpath=%s"
-            % (se_yaml_path, exec_path, exec_args, bandwidth, sim_stat_file_path)
+            "--|yaml_path=%s|exec_path=%s|exec_args=%s|l1_core_bw=%sB|stat_fpath=%s|simeng_stat_csv_path=%s"
+            % (
+                se_yaml_path,
+                exec_path,
+                exec_args,
+                bandwidth,
+                sim_stat_file_path,
+                simeng_stat_fpath,
+            )
         )
         return sst_args.split("|")
 
@@ -202,8 +270,21 @@ class ModsimBenchmarks:
             exec_args, itrs = self.generate_benchmark_exec_args(fp_width, msize)
             path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
             l1_core_bw = 128
+            simeng_stat_csv_path = "%s/se_neon_fp%s_sz%s.csv" % (
+                self.sim_dir_path,
+                fp_width,
+                msize,
+            )
+            output_path = "%s/neon_fp%s_sz%s.txt" % (
+                self.output_dir_path,
+                fp_width,
+                msize,
+            )
+
             benchmark = {
                 "path": path,
+                "output_path": output_path,
+                "simeng_stat_csv_path": simeng_stat_csv_path,
                 "desc": (
                     "%s input_size=%s itrs=%s l1/core_bw=%sB"
                     % (name, msize, itrs, l1_core_bw)
@@ -215,6 +296,7 @@ class ModsimBenchmarks:
                     exec_args,
                     l1_core_bw,
                     self.sim_sst_stat_csv_path,
+                    simeng_stat_csv_path,
                 ),
                 "matrix_size": msize,
             }
@@ -226,30 +308,43 @@ class ModsimBenchmarks:
         matrix_sizes = self.json_cfg["matrix_sizes"]
         vector_lengths = self.json_cfg["vector_lengths"]
         benchmarks = []
-        file_benchmark = {
-            "stat_file_path": ("%s/%s.csv" % (self.stats_dir_path, name)),
-            "sim_yaml_path": ("%s/sim.yaml" % (self.sim_dir_path)),
-        }
+        file_benchmark = {"stat_file_path": ("%s/%s.csv" % (self.stats_dir_path, name))}
+        yaml_path = "%s/sim_sve_vl%s.yaml" % (self.sim_dir_path, sve_vl)
+        l1_core_bw = self.scale_core_and_l1_bandwidth(sve_vl)
+        path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
         for msize in matrix_sizes:
             exec_args, itrs = self.generate_benchmark_exec_args(fp_width, msize)
-            path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
-
-            l1_core_bw = self.scale_core_and_l1_bandwidth(sve_vl)
+            output_path = "%s/sve_fp%s_vl%s_sz%s.txt" % (
+                self.output_dir_path,
+                fp_width,
+                sve_vl,
+                msize,
+            )
+            simeng_stat_csv_path = "%s/se_sve_fp%s_vl%s_sz%s.csv" % (
+                self.sim_dir_path,
+                fp_width,
+                sve_vl,
+                msize,
+            )
             benchmark = {
                 "path": path,
+                "output_path": output_path,
                 "desc": (
                     "%s input_size=%s sve_vl=%s itrs=%s l1/core_bw=%sB"
                     % (name, msize, sve_vl, itrs, l1_core_bw)
                 ),
+                "yaml_path": yaml_path,
+                "simeng_stat_csv_path": simeng_stat_csv_path,
                 "sve_length": sve_vl,
                 "l1_core_bw": l1_core_bw,
                 "itrs": itrs,
                 "sst_cli_args": self.generate_sst_cli_args(
-                    file_benchmark["sim_yaml_path"],
+                    yaml_path,
                     path,
                     exec_args,
                     l1_core_bw,
                     self.sim_sst_stat_csv_path,
+                    simeng_stat_csv_path,
                 ),
                 "matrix_size": msize,
             }
@@ -261,30 +356,45 @@ class ModsimBenchmarks:
         matrix_sizes = self.json_cfg["matrix_sizes"]
         vector_lengths = self.json_cfg["vector_lengths"]
         benchmarks = []
-        file_benchmark = {
-            "stat_file_path": ("%s/%s.csv" % (self.stats_dir_path, name)),
-            "sim_yaml_path": ("%s/sim.yaml" % (self.sim_dir_path)),
-        }
-        for msize in matrix_sizes:
-            exec_args, itrs = self.generate_benchmark_exec_args(fp_width, msize)
-            path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
-            for vector_length in vector_lengths:
-                l1_core_bw = self.scale_core_and_l1_bandwidth(vector_length)
+        file_benchmark = {"stat_file_path": ("%s/%s.csv" % (self.stats_dir_path, name))}
+        path = "%s/%s" % (self.json_cfg["bin_dir_path"], name)
+        for vector_length in vector_lengths:
+            yaml_path = "%s/sim_sme_svl%s.yaml" % (self.sim_dir_path, vector_length)
+
+            l1_core_bw = self.scale_core_and_l1_bandwidth(vector_length)
+            for msize in matrix_sizes:
+                exec_args, itrs = self.generate_benchmark_exec_args(fp_width, msize)
+                simeng_stat_csv_path = "%s/se_sme_fp%s_svl%s_sz%s.csv" % (
+                    self.sim_dir_path,
+                    fp_width,
+                    vector_length,
+                    msize,
+                )
+                output_path = "%s/sme_fp%s_svl%s_sz%s.txt" % (
+                    self.output_dir_path,
+                    fp_width,
+                    vector_length,
+                    msize,
+                )
                 benchmark = {
                     "path": path,
+                    "yaml_path": yaml_path,
+                    "output_path": output_path,
                     "desc": (
                         "%s input_size=%s sme_svl=%s itrs=%s l1/core_bw=%sB"
                         % (name, msize, vector_length, itrs, l1_core_bw)
                     ),
+                    "simeng_stat_csv_path": simeng_stat_csv_path,
                     "sme_svl": vector_length,
                     "l1_core_bw": l1_core_bw,
                     "itrs": itrs,
                     "sst_cli_args": self.generate_sst_cli_args(
-                        file_benchmark["sim_yaml_path"],
+                        yaml_path,
                         path,
                         exec_args,
                         l1_core_bw,
                         self.sim_sst_stat_csv_path,
+                        simeng_stat_csv_path,
                     ),
                     "matrix_size": msize,
                 }
@@ -381,7 +491,8 @@ class ModsimBenchmarks:
             % (count, category.upper())
         )
 
-    def generate_csv_row(self, category, benchmark, stdout):
+    def generate_csv_row(self, category, benchmark, stdout, se_csv_fpath):
+        se_csv_stats = self.get_simeng_csv_stats(se_csv_fpath)
         simeng_stats = self.parse_output(stdout)
         sst_stats = self.parse_sim_sst_stats()
         csv_row = {}
@@ -393,7 +504,7 @@ class ModsimBenchmarks:
         elif category == "sme":
             csv_row["sme_length"] = benchmark["sme_svl"]
             csv_row["l1_core_bw"] = benchmark["l1_core_bw"]
-        return {**csv_row, **{**simeng_stats, **sst_stats}}
+        return {**csv_row, **{**simeng_stats, **sst_stats, **se_csv_stats}}
 
     def generate_stat_file_from_df(self, df, stat_fpath):
         df.to_csv(stat_fpath, index=False)
@@ -414,24 +525,11 @@ class ModsimBenchmarks:
 
     def parse_output(self, output: str):
         roi_cycles_reg = re.compile("Done in (-?[0-9]+) cycles!")
-        total_cycles_reg = re.compile("\[SimEng\] cycles: (-?[0-9]+)")
-        ipc_reg = re.compile("\[SimEng\] ipc: (-?\d+(?:\.\d+)?)")
-        insn_reg = re.compile("\[SimEng\] retired: (-?[0-9]+)")
-        mips_reg = re.compile("\s(-?\d+(?:\.\d+)?) MIPS\)")
-
         lines = output.splitlines()
-        parsed_output = {"roi_cycles": -1, "total_cycles": -1, "ipc": 0}
+        parsed_output = {"roi_cycles": -1}
         for line in lines:
             if roi_search := re.search(roi_cycles_reg, line):
                 parsed_output["roi_cycles"] = int(roi_search.group(1))
-            elif insn_search := re.search(insn_reg, line):
-                parsed_output["total_insns"] = int(insn_search.group(1))
-            elif ipc_search := re.search(ipc_reg, line):
-                parsed_output["ipc"] = float(ipc_search.group(1))
-            elif tc_search := re.search(total_cycles_reg, line):
-                parsed_output["total_cycles"] = int(tc_search.group(1))
-            elif mips_search := re.search(mips_reg, line):
-                parsed_output["mips"] = float(mips_search.group(1))
         return parsed_output
 
     def parse_sim_sst_stats(self):
@@ -446,6 +544,10 @@ class ModsimBenchmarks:
             "l2_misses": int(l2m),
         }
         return parsed_csv
+
+    def get_simeng_csv_stats(self, path):
+        csv_pd = csv.DictReader(open(path, "r"))
+        return list(csv_pd).pop()
 
     def start_benchmark_spinner(self, b_text):
         bench_str = "Running %s" % b_text
@@ -465,7 +567,9 @@ class ModsimBenchmarks:
                 symbol=colored("✔", "light_green", attrs=["bold"]), text=bench_str
             )
 
-    def run_benchmark(self, subproc_args, total_count, current_count, desc):
+    def run_benchmark(
+        self, subproc_args, total_count, current_count, desc, output_fpath
+    ):
         spinner_text = "[%s/%s] %s" % (
             current_count,
             total_count,
@@ -476,6 +580,9 @@ class ModsimBenchmarks:
         stdout = self.run_subprocess(cmd)
         if self.json_cfg["print_sim_output"]:
             print(stdout)
+        ofile = open(output_fpath, "w")
+        ofile.write(stdout)
+        ofile.close()
         return stdout
 
     def run_neon(self, b_suite):
@@ -499,11 +606,15 @@ class ModsimBenchmarks:
                         total_benchmark_count,
                         current_count,
                         benchmark["desc"],
+                        benchmark["output_path"],
                     )
-                    csv_row = self.generate_csv_row("neon", benchmark, stdout)
+                    csv_row = self.generate_csv_row(
+                        "neon", benchmark, stdout, benchmark["simeng_stat_csv_path"]
+                    )
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+
                     self.stop_and_persist_benchmark_spinner()
                     self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
@@ -525,12 +636,12 @@ class ModsimBenchmarks:
             row_df = pd.DataFrame(columns=sve_header)
             current_count = completed_count
             stat_file_path = file_benchmark["stat_file_path"]
-            sim_yaml_file_path = file_benchmark["sim_yaml_path"]
             sve_yaml_path = self.yaml_config_paths["sve"]
             for benchmark in benchmarks:
                 try:
                     current_count += 1
                     sve_vl = benchmark["sve_length"]
+                    sim_yaml_file_path = benchmark["yaml_path"]
                     self.generate_sve_yaml_with_scalebw(
                         sve_yaml_path, sim_yaml_file_path, sve_vl
                     )
@@ -540,11 +651,15 @@ class ModsimBenchmarks:
                         total_benchmark_count,
                         current_count,
                         benchmark["desc"],
+                        benchmark["output_path"],
                     )
-                    csv_row = self.generate_csv_row("sve", benchmark, stdout)
+                    csv_row = self.generate_csv_row(
+                        "sve", benchmark, stdout, benchmark["simeng_stat_csv_path"]
+                    )
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+
                     self.stop_and_persist_benchmark_spinner()
                     self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
@@ -566,13 +681,13 @@ class ModsimBenchmarks:
             row_df = pd.DataFrame(columns=sme_header)
             current_count = completed_count
             stat_file_path = file_benchmark["stat_file_path"]
-            sim_yaml_file_path = file_benchmark["sim_yaml_path"]
             sme_yaml_path = self.yaml_config_paths["sme"]
 
             for benchmark in benchmarks:
                 try:
                     current_count += 1
                     sme_svl = benchmark["sme_svl"]
+                    sim_yaml_file_path = benchmark["yaml_path"]
                     self.generate_sme_yaml_with_scalebw(
                         sme_yaml_path, sim_yaml_file_path, sme_svl
                     )
@@ -581,11 +696,15 @@ class ModsimBenchmarks:
                         total_benchmark_count,
                         current_count,
                         benchmark["desc"],
+                        benchmark["output_path"],
                     )
-                    csv_row = self.generate_csv_row("sme", benchmark, stdout)
+                    csv_row = self.generate_csv_row(
+                        "sme", benchmark, stdout, benchmark["simeng_stat_csv_path"]
+                    )
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
+
                     self.stop_and_persist_benchmark_spinner()
                     self.generate_stat_file_from_df(row_df, stat_file_path)
                 except KeyboardInterrupt:
