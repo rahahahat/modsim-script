@@ -36,6 +36,7 @@ def parseParams(params: list[str]):
         "exec_args": "",
         "l1_core_bw": "",
         "stat_fpath": "",
+        "simeng_stat_csv_path": "",
     }
     for param in params:
         key, value = split(param)
@@ -107,6 +108,7 @@ cpu.addParams(
         "clock": A64FX_CLOCK,
         "max_addr_memory": memprops["end_addr"],
         "cache_line_width": A64FX_CLW,
+        "stat_csv_path": params["simeng_stat_csv_path"],
     }
 )
 
@@ -136,6 +138,7 @@ l1cache.addParams(
         "response_link_width": params["l1_core_bw"],
         "mshr_latency_cycles": 1,
         "tag_access_latency": 2,
+        "mshr_num_entries": 21,
     }
 )
 # Set MESI L1 coherence controller to the "coherence" slot
@@ -174,6 +177,7 @@ l2cache.addParams(
         "response_link_width": A64FX_L2TOL1_PC_TPUT,
         "mshr_latency_cycles": 1,
         "tag_access_latency": 37,
+        "mshr_num_entries": 64,
     }
 )
 # Set MESI L2 coherence controller to the "coherence" slot
