@@ -138,7 +138,7 @@ l1cache.addParams(
         "response_link_width": params["l1_core_bw"],
         "mshr_latency_cycles": 1,
         "tag_access_latency": 2,
-        "mshr_num_entries": 21,
+        # "mshr_num_entries": 21,
     }
 )
 # Set MESI L1 coherence controller to the "coherence" slot
@@ -177,7 +177,7 @@ l2cache.addParams(
         "response_link_width": A64FX_L2TOL1_PC_TPUT,
         "mshr_latency_cycles": 1,
         "tag_access_latency": 37,
-        "mshr_num_entries": 64,
+        # "mshr_num_entries": 64,
     }
 )
 # Set MESI L2 coherence controller to the "coherence" slot
