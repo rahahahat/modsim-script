@@ -481,7 +481,7 @@ class ModsimBenchmarks:
     ):
         neon_yaml_data = self.get_yaml_data(neon_yaml_path)
         if is_vanilla:
-            sve_yaml_data["CSV-Stats-Path"] = se_stat_path
+            neon_yaml_data["CSV-Stats-Path"] = se_stat_path
 
         self.save_yaml_data(output_path, neon_yaml_data)
 
