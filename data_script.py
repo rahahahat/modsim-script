@@ -152,7 +152,6 @@ class ModsimBenchmarks:
             "bin_dir_path",
             "sst_config_path",
             "sst_core_path",
-            "matrix_sizes",
             "vector_lengths",
             "print_sim_output",
             "vanilla",
@@ -190,9 +189,8 @@ class ModsimBenchmarks:
             self.validate_file_existance(path)
 
         self.vanilla_se = json_dict["vanilla"]
-        if self.vanilla_se:
-            self.simeng_path = json_dict["simeng_path"]
-            self.validate_file_existance(self.simeng_path)
+        self.simeng_path = json_dict["simeng_path"]
+        self.validate_file_existance(self.simeng_path)
 
     def generate_vanilla_simeng_args(self, bin_path, yaml_path, simeng_path):
         return [simeng_path, yaml_path, bin_path]
@@ -218,23 +216,23 @@ class ModsimBenchmarks:
         return sst_args.split("|")
 
     def generate_neon_benchmarks(
-        self, bechmark_name, fp_width, matrix_size, iterations
+        self, benchmark_name, fp_width, matrix_size, iterations
     ):
         prefix = "se" if self.vanilla_se else "sst"
         l1_core_bw = 128
         yaml_path = "%s/%s_%s_neon.yaml" % (self.sim_dir_path, prefix, fp_width)
         file_benchmark = {
             "output_stat_file_path": "%s/%s_%s.csv"
-            % (self.stats_dir_path, prefix, bechmark_name)
+            % (self.stats_dir_path, prefix, benchmark_name)
         }
         benchmark = {
             "sst_stat_file_path": (
-                "%s/sst_%s.csv" % (self.sim_dir_path, bechmark_name)
+                "%s/sst_%s.csv" % (self.sim_dir_path, benchmark_name)
             ),
-            "se_stat_file_path": ("%s/se_%s.csv" % (self.sim_dir_path, bechmark_name)),
-            "path": "%s/%s" % (self.json_cfg["bin_dir_path"], bechmark_name),
+            "se_stat_file_path": ("%s/se_%s.csv" % (self.sim_dir_path, benchmark_name)),
+            "path": "%s/%s" % (self.json_cfg["bin_dir_path"], benchmark_name),
             "output_path": (
-                "%s/%s_%s.output" % (self.output_dir_path, prefix, bechmark_name)
+                "%s/%s_%s.output" % (self.output_dir_path, prefix, benchmark_name)
             ),
             "l1_core_bw": l1_core_bw,
             "itrs": iterations,
@@ -244,26 +242,28 @@ class ModsimBenchmarks:
             "desc": ("%s itrs=%s msize=%s" % (benchmark_name, iterations, matrix_size)),
         }
         benchmark["simeng_cli_args"] = self.generate_vanilla_simeng_args(
-            self.simeng_path, benchmark["yaml_path"], benchmark["path"]
+            benchmark["path"], benchmark["yaml_path"], self.simeng_path
         )
         benchmark["sst_cli_args"] = self.generate_sst_cli_args(
             benchmark["yaml_path"],
             benchmark["path"],
             l1_core_bw,
             benchmark["sst_stat_file_path"],
-            benchmark["se_stat_csv_path"],
+            benchmark["se_stat_file_path"],
         )
         file_benchmark["benchmarks"] = [benchmark]
         return file_benchmark
 
-    def generate_sve_benchmarks(self, bechmark_name, fp_width, matrix_size, iterations):
+    def generate_sve_benchmarks(
+        self, benchmark_name, fp_width, matrix_size, iterations
+    ):
         prefix = "se" if self.vanilla_se else "sst"
         file_benchmark = {
             "output_stat_file_path": "%s/%s_%s.csv"
-            % (self.stats_dir_path, prefix, bechmark_name),
+            % (self.stats_dir_path, prefix, benchmark_name),
             "benchmarks": [],
         }
-        for vector_length in json_cfg["vector_lengths"]:
+        for vector_length in self.json_cfg["vector_lengths"]:
             l1_core_bw = self.scale_core_and_l1_bandwidth(vector_length)
             yaml_path = "%s/%s_%s_vl%s_sve.yaml" % (
                 self.sim_dir_path,
@@ -274,16 +274,16 @@ class ModsimBenchmarks:
             benchmark = {
                 "sst_stat_file_path": (
                     "%s/sst_vl%s_%s.csv"
-                    % (self.sim_dir_path, vector_length, bechmark_name)
+                    % (self.sim_dir_path, vector_length, benchmark_name)
                 ),
                 "se_stat_file_path": (
                     "%s/se_vl%s_%s.csv"
-                    % (self.sim_dir_path, vector_length, bechmark_name)
+                    % (self.sim_dir_path, vector_length, benchmark_name)
                 ),
-                "path": "%s/%s" % (self.json_cfg["bin_dir_path"], bechmark_name),
+                "path": "%s/%s" % (self.json_cfg["bin_dir_path"], benchmark_name),
                 "output_path": (
                     "%s/%s_vl%s_%s.output"
-                    % (self.output_dir_path, prefix, vector_length, bechmark_name)
+                    % (self.output_dir_path, prefix, vector_length, benchmark_name)
                 ),
                 "sve_vl": vector_length,
                 "l1_core_bw": l1_core_bw,
@@ -303,26 +303,28 @@ class ModsimBenchmarks:
                 ),
             }
             benchmark["simeng_cli_args"] = self.generate_vanilla_simeng_args(
-                self.simeng_path, benchmark["yaml_path"], benchmark["path"]
+                benchmark["path"], benchmark["yaml_path"], self.simeng_path
             )
             benchmark["sst_cli_args"] = self.generate_sst_cli_args(
                 benchmark["yaml_path"],
                 benchmark["path"],
                 l1_core_bw,
                 benchmark["sst_stat_file_path"],
-                benchmark["simeng_stat_file_path"],
+                benchmark["se_stat_file_path"],
             )
             file_benchmark["benchmarks"].append(benchmark)
         return file_benchmark
 
-    def generate_sme_benchmarks(self, bechmark_name, fp_width, matrix_size, iterations):
+    def generate_sme_benchmarks(
+        self, benchmark_name, fp_width, matrix_size, iterations
+    ):
         prefix = "se" if self.vanilla_se else "sst"
         file_benchmark = {
             "output_stat_file_path": "%s/%s_%s.csv"
-            % (self.stats_dir_path, prefix, bechmark_name),
+            % (self.stats_dir_path, prefix, benchmark_name),
             "benchmarks": [],
         }
-        for vector_length in json_cfg["vector_lengths"]:
+        for vector_length in self.json_cfg["vector_lengths"]:
             l1_core_bw = self.scale_core_and_l1_bandwidth(vector_length)
             yaml_path = "%s/%s_%s_svl%s_sme.yaml" % (
                 self.sim_dir_path,
@@ -331,18 +333,18 @@ class ModsimBenchmarks:
                 vector_length,
             )
             benchmark = {
-                "stat_file_path": (
+                "sst_stat_file_path": (
                     "%s/sst_svl%s_%s.csv"
-                    % (self.sim_dir_path, vector_length, bechmark_name)
+                    % (self.sim_dir_path, vector_length, benchmark_name)
                 ),
-                "simeng_stat_csv_path": (
+                "se_stat_file_path": (
                     "%s/se_svl%s_%s.csv"
-                    % (self.sim_dir_path, vector_length, bechmark_name)
+                    % (self.sim_dir_path, vector_length, benchmark_name)
                 ),
-                "path": "%s/%s" % (self.json_cfg["bin_dir_path"], bechmark_name),
+                "path": "%s/%s" % (self.json_cfg["bin_dir_path"], benchmark_name),
                 "output_path": (
                     "%s/%s_svl%s_%s.output"
-                    % (self.output_dir_path, prefix, vector_length, bechmark_name)
+                    % (self.output_dir_path, prefix, vector_length, benchmark_name)
                 ),
                 "sme_svl": vector_length,
                 "l1_core_bw": l1_core_bw,
@@ -362,14 +364,14 @@ class ModsimBenchmarks:
                 ),
             }
             benchmark["simeng_cli_args"] = self.generate_vanilla_simeng_args(
-                self.simeng_path, benchmark["yaml_path"], benchmark["path"]
+                benchmark["path"], benchmark["yaml_path"], self.simeng_path
             )
             benchmark["sst_cli_args"] = self.generate_sst_cli_args(
                 benchmark["yaml_path"],
                 benchmark["path"],
                 l1_core_bw,
-                benchmark["stat_file_path"],
-                benchmark["simeng_stat_csv_path"],
+                benchmark["sst_stat_file_path"],
+                benchmark["se_stat_file_path"],
             )
             file_benchmark["benchmarks"].append(benchmark)
         return file_benchmark
@@ -384,8 +386,8 @@ class ModsimBenchmarks:
             name_split = benchmark_name.split("_")
             fp_wdith = name_split[0]
             btype = name_split[1]
-            matrix_size = parseInt(name_split[2])
-            iterations = parseInt(name_split[3][:-3])
+            matrix_size = int(name_split[2])
+            iterations = int(name_split[3][:-7])
             if "neon" == btype:
                 file_benchmark = self.generate_neon_benchmarks(
                     benchmark_name, fp_wdith, matrix_size, iterations
@@ -472,9 +474,7 @@ class ModsimBenchmarks:
         output_path = benchmark["yaml_path"]
         se_stat_path = benchmark["se_stat_file_path"]
         if btype == "neon":
-            self.generate_neon_yaml_file(
-                output_path, 128, self.vanilla_se, se_stat_path
-            )
+            self.generate_neon_yaml_file(output_path, self.vanilla_se, se_stat_path)
         elif btype == "sve":
             vl = benchmark["sve_vl"]
             self.generate_sve_yaml_with_scalebw(
@@ -628,14 +628,14 @@ class ModsimBenchmarks:
     def run_benchmark_suite(self, btype):
         suite = self.benchmarks[btype]
         file_benchmarks = suite["file_benchmarks"]
-        total_benchmark_count = b_suite["count"]
+        total_benchmark_count = suite["count"]
         completed_count = 0
         self.print_benchmark_category(btype, total_benchmark_count)
         for file_benchmark in file_benchmarks:
             output_stat_file_path = file_benchmark["output_stat_file_path"]
             row_df = pd.DataFrame(columns=self.get_header(btype))
             current_count = completed_count
-            for benchmarks in file_benchmark["benchmarks"]:
+            for benchmark in file_benchmark["benchmarks"]:
                 try:
                     current_count += 1
                     stdout = ""
@@ -650,7 +650,7 @@ class ModsimBenchmarks:
                         stdout = stdout = self.run_sst_benchmark(
                             benchmark, total_benchmark_count, current_count
                         )
-                    csv_row = self.generate_csv_row(btyte, benchmark, stdout)
+                    csv_row = self.generate_csv_row(btype, benchmark, stdout)
                     row_df = pd.concat(
                         [row_df, pd.DataFrame([csv_row])], ignore_index=True
                     )
