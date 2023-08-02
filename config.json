@@ -1,12 +1,12 @@
 {
-  "bin_dir_path": "/Users/rahahahat/matmul_fpxx_SME_src/matmul_fp32_SME/binaries",
-  "input_ref_path": "/Users/rahahahat/matmul_fpxx_SME_src/Input_files",
-  "output_ref_path": "/Users/rahahahat/matmul_fpxx_SME_src/Ref_output",
-  "yaml_configs_dir_path": "/Users/rahahahat/modsim-script/yaml_configs",
-  "benchmarks": ["gemm_fp32_neon", "gemm_fp32_sme"],
-  "sst_config_path": "/Users/rahahahat/modsim-script/modsim-a64fx-config.py",
-  "sst_core_path": "/Users/rahahahat/sst/core-install/bin",
+  "bin_dir_path": "/home/rahat/work/matmul_fpxx_SME_src/matmul_fp32_SME/binaries",
+  "yaml_configs_dir_path": "/home/rahat/work/modsim/yaml_configs",
+  "benchmarks": ["gemm_fp32_sme", "gemm_fp32_sve128", "gemm_fp32_neon"],
+  "sst_config_path": "/home/rahat/work/modsim/modsim-a64fx-config.py",
+  "sst_core_path": "/home/rahat/work/installs/sst-core/bin",
   "matrix_sizes": [64],
-  "vector_lengths": [1024, 2048],
-  "print_sim_output": false
+  "vector_lengths": [1024],
+  "print_sim_output": true,
+  "vanilla": true,
+  "simeng_path": "/home/rahat/work/installs/simeng/bin/simeng"
 }

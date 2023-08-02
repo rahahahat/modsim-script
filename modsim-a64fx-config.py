@@ -33,7 +33,6 @@ def parseParams(params: list[str]):
     out = {
         "yaml_path": "",
         "exec_path": "",
-        "exec_args": "",
         "l1_core_bw": "",
         "stat_fpath": "",
         "simeng_stat_csv_path": "",
@@ -104,7 +103,7 @@ cpu.addParams(
     {
         "simeng_config_path": params["yaml_path"],
         "executable_path": params["exec_path"],
-        "executable_args": params["exec_args"],
+        "executable_args": "",
         "clock": A64FX_CLOCK,
         "max_addr_memory": memprops["end_addr"],
         "cache_line_width": A64FX_CLW,
